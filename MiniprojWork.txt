@@ -1,0 +1,7 @@
+Ideation - Romit
+Random Forest Implementation - Romit
+Cosine Similarity Implementation- Avi
+Dataset Preparation - Vivan, Vibek, Abdur, Anurag
+Dataset cleaning and preprocessing - Romit
+HTML code - Abdur, Vivan
+
