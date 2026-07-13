@@ -2,7 +2,7 @@
 
 A Flask-based Car recommendation system powered by a Random Forest + Cosine Similarity model, trained on 2,564 Indian cars across 15 brands.
 
-This was our KIIT 6th semester Minor Project under the guidance Mr. Murari Mandal.
+This was our KIIT 6th semester Minor Project under the guidance of Mr. Murari Mandal.
 
 ## Project Structure
 
