@@ -1,13 +1,14 @@
 # CarMatch — Car Recommendation Web App
 
-A Flask-based car recommendation system powered by a Random Forest + Cosine Similarity model trained on 2,564 Indian cars across 15 brands.
+A Flask-based Car recommendation system powered by a Random Forest + Cosine Similarity model, trained on 2,564 Indian cars across 15 brands.
+
+This was our KIIT 6th semester Minor Project under the guidance Mr. Murari Mandal.
 
 ## Project Structure
 
 ```
 carapp/
 ├── app.py                    ← Flask backend
-├── car_model_artefacts.pkl   ← Trained ML model
 ├── car_dataset_cleaned.csv   ← Cleaned dataset
 ├── requirements.txt
 ├── templates/
