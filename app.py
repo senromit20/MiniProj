@@ -10,7 +10,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 app = Flask(__name__)
 
-# ── Load model artefacts once ──
+
 with open('car_model_artefacts.pkl', 'rb') as f:
     ARTS = pickle.load(f)
 
@@ -21,7 +21,7 @@ TARGET_LE = ARTS['target_le']
 FEAT_COLS = ARTS['feature_cols']
 DF        = ARTS['df_clean'].copy()
 
-# Ensure helper columns exist
+
 def _parse_service(s):
     s = str(s)
     if s == 'Low':      return 1
@@ -101,7 +101,7 @@ def recommend(budget_label, fuel, vehicle_type, transmission, seating,
     budget_mid = (budget_lo + budget_hi) / 2
 
 
-    # ── Step 1: Hard filters ──
+    
     cands = DF.copy()
     cands = cands[(cands['PRICE(INR)'] >= budget_lo) & (cands['PRICE(INR)'] <= budget_hi)]
 
@@ -114,23 +114,23 @@ def recommend(budget_label, fuel, vehicle_type, transmission, seating,
     if seating > 0:
         cands = cands[cands['SEATING CAPACITY'] >= seating]
 
-    # Service cost filter (handles mixed ordinal 1/2/3 and rupee values)
+    
     cands = cands[cands['SERVICE_COST_NUM'].apply(
         lambda v: service_cost_matches(v, service_budget_label)
     )]
 
-    # Brand preference filter (soft — try strict first)
+    
     if brand_pref != 'any':
         brand_filtered = cands[cands['BRAND'] == brand_pref]
         if len(brand_filtered) >= 3:
             cands = brand_filtered
 
-    # Relax filters if too few candidates
+    
     if len(cands) < 3:
         cands = DF.copy()
         cands = cands[(cands['PRICE(INR)'] >= budget_lo * 0.8) & (cands['PRICE(INR)'] <= budget_hi * 1.2)]
 
-    # ── Step 2: Classifier prediction ──
+    
     fuel_enc  = fuel  if fuel  != 'any' else 'Petrol'
     vtype_enc = vehicle_type if vehicle_type != 'any' else 'SUV'
     trans_enc = transmission if transmission != 'any' else 'Manual/Auto'
@@ -140,7 +140,7 @@ def recommend(budget_label, fuel, vehicle_type, transmission, seating,
     pred_class = MODEL.predict(user_vec)[0]
     pred_model = TARGET_LE.inverse_transform([pred_class])[0]
 
-    # ── Step 3: Cosine similarity scoring ──
+    
     score_cols = ['SAFETY_SCORE', 'COMFORT_SCORE', 'TECH_SCORE', 'PERFORMANCE_SCORE']
     weights = np.array([safety_p, comfort_p, tech_p, perf_p], dtype=float)
     weights /= weights.sum()
@@ -151,7 +151,7 @@ def recommend(budget_label, fuel, vehicle_type, transmission, seating,
     sims = cosine_similarity([user_scores], cands_scores)[0]
     cands['_sim'] = sims
 
-    # Cap budget_mid at the actual max price in candidates to avoid negative scores
+    
     cand_max_price = cands['PRICE(INR)'].max() or 1
     cand_min_price = cands['PRICE(INR)'].min()
     budget_mid_capped = min(budget_mid, cand_max_price)
@@ -160,7 +160,7 @@ def recommend(budget_label, fuel, vehicle_type, transmission, seating,
     cands['_price_score'] = cands['_price_score'].clip(0, 1)
     cands['_final'] = 0.6 * cands['_sim'] + 0.4 * cands['_price_score']
 
-    # ── Step 4: Aggregate to model level ──
+    
     grp = (cands.groupby('TARGET')
            .agg(
                brand=('BRAND', 'first'),
@@ -182,7 +182,7 @@ def recommend(budget_label, fuel, vehicle_type, transmission, seating,
            .reset_index()
            .sort_values('score', ascending=False))
 
-    # Boost RF prediction to top
+    
     if pred_model in grp['TARGET'].values:
         top = grp[grp['TARGET'] == pred_model]
         rest = grp[grp['TARGET'] != pred_model]
@@ -212,7 +212,7 @@ def recommend(budget_label, fuel, vehicle_type, transmission, seating,
     return results, pred_model
 
 
-# ── Routes ──
+# Routes
 
 @app.route('/')
 def index():
